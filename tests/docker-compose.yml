@@ -1,0 +1,17 @@
+services:
+  sshbox:
+    image: alpine:latest
+    environment:
+      - ROOT_PASSWORD=add
+    ports:
+      - "22"   # no host port pinned -> each replica gets its own free port
+    command: >
+      sh -c "
+      apk add --no-cache openssh shadow &&
+      ssh-keygen -A &&
+      echo root:$$ROOT_PASSWORD | chpasswd &&
+      sed -i '/^#*PermitRootLogin/d' /etc/ssh/sshd_config &&
+      sed -i '/^#*PasswordAuthentication/d' /etc/ssh/sshd_config &&
+      printf 'PermitRootLogin yes\nPasswordAuthentication yes\n' >> /etc/ssh/sshd_config &&
+      /usr/sbin/sshd -D -e
+      "
